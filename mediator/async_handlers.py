@@ -7,7 +7,7 @@ import boto3
 import httpx
 
 from mediator.core.config import settings
-from mediator.core.db import AsyncSessionLocal
+from mediator.core.db import async_session_maker
 from mediator.crud.job import get_job, get_job_by_prediction_id, update_job_result
 from mediator.models.job import Job
 
@@ -25,12 +25,9 @@ s3 = boto3.client(
 
 async def submit_replicate_job(job_id: int):
     """
-    This function:
-    - Fetches the job from DB
-    - Calls Replicate API (Mocked)
-    - Updates prediction ID, status, timestamps for the job in DB
+    Call Replicate API (Async/Mocked) to submit the job, update prediction ID and other job details in DB.
     """
-    async with AsyncSessionLocal() as db:
+    async with async_session_maker() as db:
         job: Job = await get_job(db, job_id)
         if not job:
             logger.error(f"Job {job_id} not found")
@@ -72,7 +69,10 @@ async def submit_replicate_job(job_id: int):
 
 
 async def process_replicate_job_result(prediction_id: str, media_url: str):
-    async with AsyncSessionLocal() as db:
+    """
+    Fetch the generated media, upload to S3 and update job status in DB.
+    """
+    async with async_session_maker() as db:
         job = await get_job_by_prediction_id(db, prediction_id)
         if not job:
             logger.error(f"No job found for prediction ID: {prediction_id}")
@@ -84,7 +84,6 @@ async def process_replicate_job_result(prediction_id: str, media_url: str):
                 response.raise_for_status()
                 content = response.content
 
-            # Use job ID and prediction ID in filename
             filename = f"job-{job.id}_{prediction_id}.jpg"
 
             s3.upload_fileobj(
@@ -108,13 +107,16 @@ async def process_replicate_job_result(prediction_id: str, media_url: str):
 
 
 async def process_replicate_job(prediction_id: str, webhook_url: str):
-    await asyncio.sleep(5)  # Simulate job processing latency
+    """
+    Simulate job processing latency by sleeping, then invoke the `webhook_url` provided by the API Client.
+    """
+    await asyncio.sleep(5)
 
-    result_url = settings.DUMMY_IMAGE_URL
+    media_url = settings.DUMMY_IMAGE_URL
     webhook_payload = {
         "id": prediction_id,
         "status": "completed",
-        "output": [result_url],
+        "output": [media_url],
         "completed_at": datetime.now().isoformat(),
     }
 

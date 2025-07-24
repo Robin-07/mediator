@@ -11,4 +11,4 @@ class JobCreate(BaseModel):
 class JobStatusResponse(BaseModel):
     job_id: int
     status: str
-    result_url: Optional[str] = None
+    media_url: Optional[str] = None

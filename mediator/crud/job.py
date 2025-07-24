@@ -34,6 +34,6 @@ async def update_job_result(
     if prediction_id:
         job.prediction_id = prediction_id
     if media_url:
-        job.result_url = media_url
+        job.media_url = media_url
     await db.commit()
     await db.refresh(job)

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str
     AWS_REGION: str
     S3_BUCKET_NAME: str
+    DEBUG: int
 
     class Config:
         env_file = ".env"

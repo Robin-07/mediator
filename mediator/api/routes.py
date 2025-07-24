@@ -46,7 +46,7 @@ async def get_status(job_id: int, db: AsyncSession = Depends(get_session)):
     return JobStatusResponse(
         job_id=job.id,
         status=job.status,
-        result_url=job.media_url,
+        media_url=job.media_url,
     )
 
 
