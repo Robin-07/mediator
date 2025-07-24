@@ -1,10 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base, sessionmaker
+
 from mediator.core.config import settings
 
-DATABASE_URL = settings.DATABASE_URL
-
-engine = create_async_engine(DATABASE_URL, future=True, echo=True)
+engine = create_async_engine(settings.DATABASE_URL, future=True, echo=True)
 AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 Base = declarative_base()

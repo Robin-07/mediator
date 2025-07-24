@@ -4,8 +4,9 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     DATABASE_URL: str
     CELERY_BROKER_URL: str
-    REPLICATE_API_TOKEN: str
+    REPLICATE_PREDICTIONS_MOCK_URL: str
     REPLICATE_MODEL_VERSION: str
+    REPLICATE_CALLBACK_URL: str
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     AWS_REGION: str
