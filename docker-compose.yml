@@ -5,15 +5,14 @@ services:
     build:
       context: .
     container_name: mediator
-    command: uvicorn mediator.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/postgres
-      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
     depends_on:
       - db
-      - redis
+      - rabbitmq
 
   db:
     image: postgres:15
@@ -27,11 +26,14 @@ services:
     ports:
       - "5432:5432"
 
-  redis:
-    image: redis:7
-    container_name: redis
+  rabbitmq:
+    image: rabbitmq:3-management
     ports:
-      - "6379:6379"
+      - "5672:5672"
+      - "15672:15672"  # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
   celery:
     build:
@@ -40,11 +42,10 @@ services:
     command: celery -A mediator.worker worker --loglevel=info
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/postgres
-      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
     depends_on:
-      - mediator
-      - redis
       - db
+      - rabbitmq
 
 volumes:
   pgdata:

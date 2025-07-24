@@ -1,13 +1,31 @@
-from sqlalchemy import Column, Integer, String, DateTime, JSON, func
-from mediator.core.database import Base
+import enum
+from datetime import datetime
+
+from sqlalchemy import DateTime, Enum, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
+
+from mediator.db import Base
+
+
+class JobStatus(str, enum.Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class Job(Base):
     __tablename__ = "jobs"
 
-    id = Column(Integer, primary_key=True, index=True)
-    prompt = Column(String, nullable=False)
-    parameters = Column(JSON, nullable=True)
-    status = Column(String, default="pending")
-    result_url = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    parameters: Mapped[str] = mapped_column(Text, nullable=True)  # JSON serialized
+    status: Mapped[JobStatus] = mapped_column(
+        Enum(JobStatus), default=JobStatus.PENDING
+    )
+    media_url: Mapped[str] = mapped_column(String, nullable=True)
+    retry_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )

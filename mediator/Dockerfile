@@ -2,21 +2,21 @@
 
 FROM python:3.11-slim
 
-# Set working directory
-WORKDIR /mediator
+WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y build-essential libpq-dev
 
-# Install Python dependencies
+# Copy requirements and install Python deps
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy application files
-COPY ./mediator /mediator/mediator
+# Copy application and startup script
+COPY ./mediator /app/mediator
+COPY ./scripts/start.sh /app/start.sh
 
-# Expose port
-EXPOSE 8000
+# Make script executable
+RUN chmod +x /app/start.sh
 
-# Run app
-CMD ["uvicorn", "mediator.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default command
+CMD ["/app/start.sh"]

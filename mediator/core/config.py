@@ -3,8 +3,13 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     DATABASE_URL: str
-    CELERY_BROKER_URL: str = "redis://redis:6379/0"
-    CELERY_BACKEND_URL: str = "redis://redis:6379/1"
+    CELERY_BROKER_URL: str
+    REPLICATE_API_TOKEN: str
+    REPLICATE_MODEL_VERSION: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION: str
+    S3_BUCKET_NAME: str
 
     class Config:
         env_file = ".env"

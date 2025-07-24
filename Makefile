@@ -1,6 +1,6 @@
 # Makefile for mediator FastAPI project
 
-.PHONY: run lint test build up down
+.PHONY: run lint test build up down format makemigrations migrate downgrade history
 
 # Run the FastAPI app locally (reload for dev)
 run:
@@ -29,3 +29,19 @@ test:
 # Run pre-commit on all files
 format:
 	pre-commit run --all-files
+
+# Create a new migration (requires message="...")
+makemigrations:
+	alembic revision --autogenerate -m "$(message)"
+
+# Apply migrations
+migrate:
+	alembic upgrade head
+
+# Downgrade to previous migration
+downgrade:
+	alembic downgrade -1
+
+# Show migration history
+history:
+	alembic history --verbose

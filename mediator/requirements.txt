@@ -7,3 +7,8 @@ pydantic
 python-dotenv
 ruff>=0.4.0
 pre-commit
+celery  
+httpx
+aiofiles
+boto3
+types-requests

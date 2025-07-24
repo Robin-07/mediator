@@ -1,20 +1,21 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 import logging
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from mediator.api.endpoints import router as job_router
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Media Generation API",
+    title="Mediator",
     version="1.0.0",
-    description="Async background job service with FastAPI, Celery, and PostgreSQL.",
+    description="Async background job service with FastAPI, Celery, RabbitMQ and PostgreSQL.",
 )
-
-# Mount static file serving for local images
-app.mount("/media", StaticFiles(directory="media"), name="media")
 
 # CORS config (adjust origins for production)
 app.add_middleware(
@@ -37,9 +38,9 @@ async def health_check():
 
 @app.on_event("startup")
 async def on_startup():
-    logger.info("FastAPI app starting up...")
+    logger.info("Mediator starting up...")
 
 
 @app.on_event("shutdown")
 async def on_shutdown():
-    logger.info("FastAPI app shutting down...")
+    logger.info("Mediator shutting down...")
