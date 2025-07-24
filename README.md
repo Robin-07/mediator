@@ -5,6 +5,7 @@ An async-first, FastAPI-based microservice that queues and processes media gener
 ## Tech Stack
 
 - **FastAPI** – API layer
+- **SQLAlchemy & Alembic** - Async ORM and Migrations
 - **Celery** – Async task processing
 - **RabbitMQ** – Message broker
 - **PostgreSQL** – Database
@@ -33,14 +34,17 @@ D -->|Upload Media Files| E
 
 ```
 
-## Getting Started
+## Setting up
 
 #### 1. Clone this Repository
-```bash
+
+```shell
 git clone https://github.com/Robin-07/mediator
 cd mediator
 ```
+
 #### 2. Create `.env` file at project root
+
 ```env
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/postgres
 CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
@@ -60,13 +64,27 @@ DEBUG=1
 ```
 
 #### 3. Build and start the services
-```bash
+
+```shell
 docker compose up --build
 ```
 
-### Todo
+## Applying Migrations
+
+```shell
+# Enter running mediator container
+docker compose exec mediator bash
+
+# Run following commands
+alembic revision --autogenerate -m "your message"
+alembic upgrade head
+```
+
+## Todo
+
 - Use actual Replicate API
-- Add rate limiting & robust retry logic
-- Add webhook validation
-- Add more unit & integration tests
-- Add Prometheus/Grafana for metrics
+- Rate limiting & robust retry logic
+- Webhook validation
+- Unit & Integration tests
+- Prometheus/Grafana integration for metrics
+- Add documentation
