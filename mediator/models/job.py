@@ -1,7 +1,9 @@
 import enum
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 from sqlalchemy import DateTime, Enum, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from mediator.core.db import Base
@@ -19,7 +21,7 @@ class Job(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     prompt: Mapped[str] = mapped_column(Text, nullable=False)
-    parameters: Mapped[str] = mapped_column(Text, nullable=True)  # JSON serialized
+    parameters: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
     status: Mapped[JobStatus] = mapped_column(
         Enum(JobStatus), default=JobStatus.PENDING
     )
