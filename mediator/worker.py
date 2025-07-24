@@ -3,7 +3,7 @@ import asyncio
 from celery import Celery
 
 from mediator.core.config import settings
-from mediator.services.async_handlers import (
+from mediator.async_handlers import (
     submit_replicate_job,
     process_replicate_job,
     process_replicate_job_result,
@@ -26,8 +26,7 @@ celery_app.conf.task_default_queue = "default"
 )
 def submit_replicate_job_task(self, job_id: int):
     """
-    Celery task to process a media generation job.
-    It wraps an async function into a sync context.
+    Submit a media generation job.
     """
     asyncio.run(submit_replicate_job(job_id))
 
@@ -41,8 +40,7 @@ def submit_replicate_job_task(self, job_id: int):
 )
 def process_replicate_job_task(self, prediction_id: str, webhook_url: str):
     """
-    Celery task to mock a replicate API request completion.
-    It wraps an async function into a sync context.
+    Mock a Replicate API job processing.
     """
     asyncio.run(process_replicate_job(prediction_id, webhook_url))
 
@@ -56,7 +54,6 @@ def process_replicate_job_task(self, prediction_id: str, webhook_url: str):
 )
 def process_replicate_job_result_task(self, prediction_id: str, media_url: str):
     """
-    Celery task to mock a replicate API request completion.
-    It wraps an async function into a sync context.
+    Handle result of a submitted job.
     """
     asyncio.run(process_replicate_job_result(prediction_id, media_url))

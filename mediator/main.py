@@ -5,11 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from mediator.api.routes import router as job_router
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
-
+# Logging config
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s.%(msecs)03d | %(levelname)-7s | %(message)s")
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 app = FastAPI(
     title="Mediator",
@@ -27,7 +29,7 @@ app.add_middleware(
 )
 
 # Include API routes
-app.include_router(job_router)
+app.include_router(job_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

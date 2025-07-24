@@ -24,9 +24,15 @@ async def get_job_by_prediction_id(db: AsyncSession, prediction_id: str) -> Job 
 
 
 async def update_job_result(
-    db: AsyncSession, job: Job, status: str, media_url: str = None
+    db: AsyncSession,
+    job: Job,
+    status: str,
+    prediction_id: str = None,
+    media_url: str = None,
 ):
     job.status = status
+    if prediction_id:
+        job.prediction_id = prediction_id
     if media_url:
         job.result_url = media_url
     await db.commit()

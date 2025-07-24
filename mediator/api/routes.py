@@ -16,12 +16,15 @@ from mediator.worker import (
     process_replicate_job_task,
     submit_replicate_job_task,
 )
+from datetime import datetime
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+# --------------------------- Mediator API ---------------------------
 
-@router.post("/v1/generate", response_model=JobStatusResponse)
+
+@router.post("/generate", response_model=JobStatusResponse)
 async def generate(job_in: JobCreate, db: AsyncSession = Depends(get_session)):
     job = await create_job(db, job_in)
     logger.info(f"Created job {job.id} with prompt: '{job.prompt}'")
@@ -32,7 +35,7 @@ async def generate(job_in: JobCreate, db: AsyncSession = Depends(get_session)):
     return JobStatusResponse(job_id=job.id, status=job.status)
 
 
-@router.get("/v1/status/{job_id}", response_model=JobStatusResponse)
+@router.get("/status/{job_id}", response_model=JobStatusResponse)
 async def get_status(job_id: int, db: AsyncSession = Depends(get_session)):
     job = await get_job(db, job_id)
     if not job:
@@ -47,23 +50,7 @@ async def get_status(job_id: int, db: AsyncSession = Depends(get_session)):
     )
 
 
-@router.post("/v1/predictions")
-async def replicate_prediction(payload: ReplicatePredictionInput):
-    prediction_id = str(uuid.uuid4())
-    logger.info(f"Received mock prediction request. Returning id={prediction_id}")
-
-    process_replicate_job_task.delay(prediction_id, payload.webhook)
-
-    return {
-        "id": prediction_id,
-        "status": "processing",
-        "created_at": "2025-07-23T12:00:00Z",
-        "version": payload.version,
-        "input": payload.input,
-    }
-
-
-@router.post("/v1/callback")
+@router.post("/callback")
 async def replicate_callback(payload: ReplicateCallbackPayload):
     logger.info(f"Received callback for prediction {payload.id}")
 
@@ -76,3 +63,23 @@ async def replicate_callback(payload: ReplicateCallbackPayload):
     process_replicate_job_result_task.delay(payload.id, str(media_url))
 
     return {"detail": "Callback accepted"}
+
+
+# --------------------------- Mocked Replicate API ---------------------------
+
+
+@router.post("/predictions")
+async def replicate_prediction(payload: ReplicatePredictionInput):
+    prediction_id = str(uuid.uuid4())
+    logger.info(f"Received mock prediction request. Returning id={prediction_id}")
+
+    payload_json = payload.model_dump(mode="json")
+    process_replicate_job_task.delay(prediction_id, payload_json["webhook"])
+
+    return {
+        "id": prediction_id,
+        "status": "processing",
+        "created_at": datetime.now().isoformat(),
+        "version": payload_json["version"],
+        "input": payload_json["input"],
+    }

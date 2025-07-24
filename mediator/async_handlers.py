@@ -20,6 +20,8 @@ s3 = boto3.client(
     region_name=settings.AWS_REGION,
 )
 
+# ----------------------- Mediator task handlers -----------------------
+
 
 async def submit_replicate_job(job_id: int):
     """
@@ -55,9 +57,11 @@ async def submit_replicate_job(job_id: int):
                     headers=headers,
                 )
                 response.raise_for_status()
-                prediction_id = response.json()["prediction_id"]
+                prediction_id = response.json()["id"]
 
-            await update_job_result(db, job, status="processing")
+            await update_job_result(
+                db, job, status="processing", prediction_id=prediction_id
+            )
             logger.info(
                 f"Job {job_id} processing started. Prediction ID: {prediction_id}"
             )
@@ -65,6 +69,42 @@ async def submit_replicate_job(job_id: int):
         except Exception as e:
             await update_job_result(db, job, status="failed")
             logger.exception(f"Job {job_id} failed: {str(e)}")
+
+
+async def process_replicate_job_result(prediction_id: str, media_url: str):
+    async with AsyncSessionLocal() as db:
+        job = await get_job_by_prediction_id(db, prediction_id)
+        if not job:
+            logger.error(f"No job found for prediction ID: {prediction_id}")
+            return
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(media_url)
+                response.raise_for_status()
+                content = response.content
+
+            # Use job ID and prediction ID in filename
+            filename = f"job-{job.id}_{prediction_id}.jpg"
+
+            s3.upload_fileobj(
+                Fileobj=io.BytesIO(content),
+                Bucket=settings.S3_BUCKET_NAME,
+                Key=filename,
+                ExtraArgs={"ContentType": "image/jpg"},
+            )
+
+            s3_url = f"https://{settings.S3_BUCKET_NAME}.s3.amazonaws.com/{filename}"
+
+            await update_job_result(db, job, status="completed", media_url=s3_url)
+            logger.info(f"Job {job.id} updated with media at {s3_url}")
+
+        except Exception as e:
+            await update_job_result(db, job, status="failed")
+            logger.exception(f"Failed to handle callback for job {job.id}: {e}")
+
+
+# ----------------------- Mocked Replicate handlers -----------------------
 
 
 async def process_replicate_job(prediction_id: str, webhook_url: str):
@@ -84,36 +124,3 @@ async def process_replicate_job(prediction_id: str, webhook_url: str):
             logger.info(f"Sent webhook to {webhook_url}: status={resp.status_code}")
         except Exception as e:
             logger.error(f"Failed to send webhook: {e}")
-
-
-async def process_replicate_job_result(prediction_id: str, media_url: str):
-    async with AsyncSessionLocal() as db:
-        job = await get_job_by_prediction_id(db, prediction_id)
-        if not job:
-            logger.error(f"No job found for prediction ID: {prediction_id}")
-            return
-
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(media_url)
-                response.raise_for_status()
-                content = response.content
-
-            # Use job ID and prediction ID in filename
-            filename = f"job-{job.id}_{prediction_id}.png"
-
-            s3.upload_fileobj(
-                Fileobj=io.BytesIO(content),
-                Bucket=settings.S3_BUCKET_NAME,
-                Key=filename,
-                ExtraArgs={"ContentType": "image/png"},
-            )
-
-            s3_url = f"https://{settings.S3_BUCKET_NAME}.s3.amazonaws.com/{filename}"
-
-            await update_job_result(db, job, status="completed", result_url=s3_url)
-            logger.info(f"Job {job.id} updated with media at {s3_url}")
-
-        except Exception as e:
-            await update_job_result(db, job, status="failed")
-            logger.exception(f"Failed to handle callback for job {job.id}: {e}")

@@ -25,6 +25,7 @@ class Job(Base):
     status: Mapped[JobStatus] = mapped_column(
         Enum(JobStatus), default=JobStatus.PENDING
     )
+    prediction_id: Mapped[str] = mapped_column(String, nullable=True)
     media_url: Mapped[str] = mapped_column(String, nullable=True)
     retry_attempts: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
