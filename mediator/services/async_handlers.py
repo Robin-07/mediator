@@ -70,7 +70,7 @@ async def submit_replicate_job(job_id: int):
 async def process_replicate_job(prediction_id: str, webhook_url: str):
     await asyncio.sleep(5)  # Simulate job processing latency
 
-    result_url = f"https://placekitten.com/512/512?pred={prediction_id}"
+    result_url = settings.DUMMY_IMAGE_URL
     webhook_payload = {
         "id": prediction_id,
         "status": "completed",
