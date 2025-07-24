@@ -1,21 +1,16 @@
-version: "3.9"
-
 services:
   mediator:
-    build:
-      context: .
+    build: .
     container_name: mediator
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/postgres
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+    env_file: ".env"
     depends_on:
       - db
       - rabbitmq
 
   db:
-    image: postgres:15
+    image: postgres:16
     container_name: postgres-db
     environment:
       POSTGRES_USER: postgres
@@ -27,25 +22,26 @@ services:
       - "5432:5432"
 
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"  # Management UI
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   celery:
-    build:
-      context: .
+    build: .
     container_name: celery-worker
     command: celery -A mediator.worker worker --loglevel=info
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/postgres
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+    env_file: ".env"
     depends_on:
       - db
       - rabbitmq
 
 volumes:
   pgdata:
+  rabbitmq_data:

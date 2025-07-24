@@ -4,7 +4,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from mediator.core.database import get_session
+from mediator.core.db import get_session
 from mediator.crud.job import create_job, get_job
 from mediator.schemas.job import JobCreate, JobStatusResponse
 from mediator.schemas.replicate import (

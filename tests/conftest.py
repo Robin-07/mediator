@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from mediator.main import app
-from mediator.core.database import Base, get_session
+from mediator.core.db import Base, get_session
 
 # Use a separate test DB
 TEST_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@db:5432/test_db"

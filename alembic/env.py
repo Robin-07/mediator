@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from mediator.core.config import settings
 from mediator.models import job  # Ensure all models are imported
-from mediator.core.database import Base
+from mediator.core.db import Base
 
 # Alembic Config object
 config = context.config

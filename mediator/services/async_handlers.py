@@ -7,7 +7,7 @@ import boto3
 import httpx
 
 from mediator.core.config import settings
-from mediator.core.database import AsyncSessionLocal
+from mediator.core.db import AsyncSessionLocal
 from mediator.crud.job import get_job, get_job_by_prediction_id, update_job_result
 from mediator.models.job import Job
 

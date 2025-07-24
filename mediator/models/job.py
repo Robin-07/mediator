@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from mediator.db import Base
+from mediator.core.db import Base
 
 
 class JobStatus(str, enum.Enum):
